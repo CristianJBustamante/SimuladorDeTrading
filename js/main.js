@@ -1,3 +1,4 @@
+// Declaración de Clases y variables globales
 
 class Investment {
     constructor(currencyId, quantity) {
@@ -46,6 +47,8 @@ const initApplication = () => {
     alert("¡Bienvenido a InversorOnline!");
     showInitialMenu();
 }
+
+// Gestor de Menues
 
 const selectOption = (menu, selectedOption) => {
     if (menu == "Initial") {
@@ -106,8 +109,6 @@ const selectOption = (menu, selectedOption) => {
 }
 
 
-
-
 initApplication();
 
 function showInitialMenu() {
@@ -126,6 +127,7 @@ function showInitialMenu() {
 
 }
 
+// OPC 1 - Ver Inversiones
 
 function showMyInvestment() {
     if (myInvestments.length == 0) {
@@ -150,6 +152,8 @@ function showMyInvestment() {
     }
 }
 
+// OPC 2 - Ver Moviemientos
+
 function showMyMovements() {
     if (myMovements.length == 0) {
         alert("Aún no tienes movimientos realizados.");
@@ -171,6 +175,8 @@ function showMyMovements() {
         showInitialMenu();
     }
 }
+
+// OPC 3 - Invertir
 
 function showInvestMenu() {
     const investMenu = `Que moneda quiere operar?:
@@ -236,6 +242,7 @@ function sellCurrency() {
     }
 }
 
+// OPC 4 - Ver Mercado
 
 function showMarket() {
     const marketStatus =
@@ -261,6 +268,8 @@ function showMarket() {
     alert(marketStatus);
     showInitialMenu();
 }
+
+// OPC 5 - Salir de la aplicación
 
 function exitApplication() {
 
