@@ -1,14 +1,35 @@
 // Declaración de Clases y variables globales
 
+class User{
+    constructor(userId, userEmail, userNick, userPassword, money) {
+        this.userId = userId;
+        this.userEmail = userEmail;
+        this.userNick = userNick;
+        this.userPassword = userPassword;
+        this.money = money;
+    }
+}
+
+let Users =[];
+
+let currentUser;
+
+let tempUserId;
+let tempUserEmail;
+let tempUserNickname;
+let tempUserPassword;
+
 class Investment {
-    constructor(currencyId, quantity) {
+    constructor(userId, currencyId, quantity) {
+        this.userId = userId;
         this.currencyId = currencyId;
         this.quantity = quantity;
     }
 }
 
 class Movement {
-    constructor(currencyId, quantity) {
+    constructor(userId, currencyId, quantity) {
+        this.userId = userId;
         this.currencyId = currencyId;
         this.quantity = quantity;
     }
@@ -33,22 +54,151 @@ Currencys.push(Currency2);
 Currencys.push(Currency3);
 Currencys.push(Currency4);
 
-console.log(Currencys);
 
-
-let money = 100000;
-const myInvestments = [];
-const myMovements = [];
+const investments = [];
+const movements = [];
 let selectedCurrency;
 
 
 
 const initApplication = () => {
     alert("¡Bienvenido a InversorOnline!");
-    showInitialMenu();
+    login();
 }
 
-// Gestor de Menues
+// Login  ------------------------------------------------------------------
+
+function login() {
+    const loginMenu = `Ingresa a tu cuenta:
+    1. Ingresar
+    2. Registrarse
+    `;
+
+    let selectedOption = prompt(loginMenu);
+    switch(parseFloat(selectedOption)){
+        case 1:
+            enterUser();
+            break;
+        case 2:
+            registerUserNickname();
+            break;
+        default:
+            alert("Ingrese una opción válida.");
+            login();
+            break;
+    }
+}
+
+function enterUser() {
+    const loginMenu = `Ingresa tu usuario o email:
+    `;
+
+    let nickOrEmail = prompt(loginMenu);
+    if(checkIfUserExist(nickOrEmail)) enterPassword();
+    else{
+        alert("Usuario inexistente. Intente nuevamente");
+        login();
+    }
+}
+
+function enterPassword() {
+    const loginMenu = `Ingresá tu contraseña:
+    `;
+
+    let password = prompt(loginMenu);
+    if(validatePassword(password)){
+        alert(`¡Bienvenido  ${currentUser.userNick} !`);
+        showInitialMenu();
+    }else{
+        alert(`Usuario o Contraseña incorrectos.`);
+        login();
+    }
+}
+
+function registerUserNickname() {
+    const loginMenu = `Ingresá tu nombre de usuario:
+    `;
+
+    let nickname = prompt(loginMenu);
+    if(nickname.length >= 8 && nickname.length < 20){
+        if(!checkIfUserExist(nickname)){
+            tempUserNickname = nickname;
+            registerUserEmail();
+        }else{
+            alert(`Ya existe un usuario con ese nombre. Intente nuevamente.`);
+            registerUserNickname();
+        }
+    }else{
+        alert(`Nombre de usuario muy corto o muy largo. Intente nuevamente.`);
+        registerUserNickname();
+    }
+}
+
+function registerUserEmail() {
+    const loginMenu = `Ingresá tu email:
+    `;
+
+    let email = prompt(loginMenu);
+
+    if(email.length >= 8 && email.length < 20 && email.includes('@')){
+        if(!checkIfUserExist(email)){
+            tempUserEmail = email;
+            registerUserPassword();
+        }else{
+            alert(`Ya existe un usuario asociado con ese correo. Intente nuevamente.`);
+            registerUserEmail();
+        }
+    }else{
+        alert(`Correo inválido. Intente nuevamente.`);
+        registerUserEmail();
+    }
+}
+
+function registerUserPassword() {
+    const loginMenu = `Ingresá tu contraseña:
+    `;
+
+    let password = prompt(loginMenu);
+
+    if(password.length >= 8 && password.length < 20){
+        tempUserPassword = password;
+
+        // Registrar usuario
+
+        let lastUserId = Users.length;
+
+        let user = new User(lastUserId, tempUserEmail, tempUserNickname, tempUserPassword, 100000);
+        Users.push(user);
+        currentUser = Users[lastUserId];
+        alert(`
+        ¡Bienvenido ${currentUser.userNick} !
+        ¡Has recibido $100000 de bienvenida!.
+        `);
+        showInitialMenu();
+
+    }else{
+        alert(`Contraseña débil. Intente nuevamente (entre 8 y 20 caracteres).`);
+        registerUserPassword();
+    }
+}
+
+function checkIfUserExist(user){
+    for (let i = 0; i < Users.length; i++) {
+        if(user == Users[i].userNick || user == Users[i].userEmail){
+            currentUser = Users[i];
+            return true;
+        } 
+    }
+    return false;
+}
+
+function validatePassword(password){
+    if(password == currentUser.userPassword) return true;
+    else return false;
+}
+
+
+// Gestor de Menues  ------------------------------------------------------------------
 
 const selectOption = (menu, selectedOption) => {
     if (menu == "Initial") {
@@ -118,7 +268,7 @@ function showInitialMenu() {
     3. Invertir
     4. Analizar Mercado
     ----------------------
-    5. Salir
+    5. Cerrar sesión
     `;
 
 
@@ -127,47 +277,51 @@ function showInitialMenu() {
 
 }
 
-// OPC 1 - Ver Inversiones
+// OPC 1 - Ver Inversiones  ------------------------------------------------------------------
 
 function showMyInvestment() {
-    if (myInvestments.length == 0) {
+    if (!userHasInvestments()) {
         let message = `Aún no tienes inversiones realizadas
-        Saldo: $` + money;
+        Saldo: $` + currentUser.money;
         alert(message);
         showInitialMenu();
     } else {
         let message = `
         Moneda | Cantidad | Valor en pesos`;
-        for (let i = 0; i < myInvestments.length; i++) {
-            const element = myInvestments[i];
-            message += `
-            `+  Currencys[element.currencyId].currencyName + ` | ` + element.quantity + ` | $` + (Currencys[element.currencyId].value * element.quantity).toFixed(2);
+        for (let i = 0; i < investments.length; i++) {
+            const element = investments[i];
+            if(element.userId == currentUser.userId){
+                message += `
+                `+  Currencys[element.currencyId].currencyName + ` | ` + element.quantity + ` | $` + (Currencys[element.currencyId].value * element.quantity).toFixed(2);
+            }
         }
 
         message +=  `
-        Saldo: $` + money.toFixed(2);
+        Saldo: $` + currentUser.money.toFixed(2);
 
         alert(message);
         showInitialMenu();
     }
 }
 
-// OPC 2 - Ver Moviemientos
+// OPC 2 - Ver Moviemientos  ------------------------------------------------------------------
 
 function showMyMovements() {
-    if (myMovements.length == 0) {
+    if (!userHasInvestments()) {
         alert("Aún no tienes movimientos realizados.");
         showInitialMenu();
     } else {
         let message= ``;
-        for (let i = 0; i < myMovements.length; i++) {
-            if(myMovements[i].quantity > 0){
-                message += `
-                * Compraste ` + myMovements[i].quantity + ` ` + Currencys[myMovements[i].currencyId].currencyName + `.`;
-            }
-            else{
-                message += `
-                * Vendiste ` + (myMovements[i].quantity * -1) + ` ` + Currencys[myMovements[i].currencyId].currencyName + `.`;
+        for (let i = 0; i < movements.length; i++) {
+            if(movements[i].userId == currentUser.userId){
+                if(movements[i].quantity > 0){
+                    message += `
+                    * Compraste ` + movements[i].quantity + ` ` + Currencys[movements[i].currencyId].currencyName + `.`;
+                }
+                else{
+                    message += `
+                    * Vendiste ` + (movements[i].quantity * -1) + ` ` + Currencys[movements[i].currencyId].currencyName + `.`;
+                }
             }
         }
 
@@ -176,7 +330,7 @@ function showMyMovements() {
     }
 }
 
-// OPC 3 - Invertir
+// OPC 3 - Invertir  ------------------------------------------------------------------
 
 function showInvestMenu() {
     const investMenu = `Que moneda quiere operar?:
@@ -205,7 +359,7 @@ function showBuySellMenu() {
 }
 
 function buyCurrency() {
-    const buy = `Cuanto desea Comprar? Saldo: $` + money.toFixed(2) + `:
+    const buy = `Cuanto desea Comprar? Saldo: $` + currentUser.money.toFixed(2) + `:
     Valor: 1 ` + Currencys[selectedCurrency].currencyName +` = $` + Currencys[selectedCurrency].value;
 
     let buyQuantity = prompt(buy);
@@ -242,7 +396,7 @@ function sellCurrency() {
     }
 }
 
-// OPC 4 - Ver Mercado
+// OPC 4 - Ver Mercado  ------------------------------------------------------------------
 
 function showMarket() {
     const marketStatus =
@@ -269,7 +423,7 @@ function showMarket() {
     showInitialMenu();
 }
 
-// OPC 5 - Salir de la aplicación
+// OPC 5 - Salir de la aplicación  ------------------------------------------------------------------
 
 function exitApplication() {
 
@@ -280,12 +434,12 @@ function exitApplication() {
         selectedOption = prompt(exitQuestion);
     } while (selectedOption.toUpperCase() != "SI" && selectedOption.toUpperCase() != "NO")
 
-    if (selectedOption == "SI") {
-        alert("Hasta la próxima!")
-    }
-    else {
-        showInitialMenu();
-    }
+    if (selectedOption == "SI"){
+        alert("Hasta la próxima!");
+        login();
+    } 
+    else showInitialMenu();
+    
 }
 
 
@@ -312,21 +466,22 @@ function getCurrencyName(){
 
 function checkCanBuyQuantity(quantity){
     const totalImport = quantity * Currencys[selectedCurrency].value;
-    if(money >= totalImport){
-        money -= totalImport;
+    if(currentUser.money >= totalImport){
+        currentUser.money -= totalImport;
         if(checkHaveCurrency(selectedCurrency)){
-            for (let i = 0; i < myInvestments.length; i++) {
-                if(myInvestments[i].currencyId == selectedCurrency){
-                    myInvestments[i].quantity += quantity;
+            for (let i = 0; i < investments.length; i++) {
+                if(investments[i].userId == currentUser.userId)
+                if(investments[i].currencyId == selectedCurrency){
+                    investments[i].quantity += quantity;
                 }
             }
         }
         else{
-            let investment = new Investment(selectedCurrency,quantity,Currencys[selectedCurrency].value);
-            myInvestments.push(investment);
+            let investment = new Investment(currentUser.userId, selectedCurrency, quantity, Currencys[selectedCurrency].value);
+            investments.push(investment);
         }
-        let movement = new Movement(selectedCurrency,quantity);
-        myMovements.push(movement);
+        let movement = new Movement(currentUser.userId, selectedCurrency, quantity);
+        movements.push(movement);
         return true;
     } else{
         return false;
@@ -334,33 +489,49 @@ function checkCanBuyQuantity(quantity){
 }
 
 function checkHaveCurrency(currencyId) {
-    if (myInvestments.length == 0) return false;
-    for (let i = 0; i < myInvestments.length; i++) {
-        if (myInvestments[i].currencyId == currencyId) return true;
+    if (investments.length == 0) return false;
+    for (let i = 0; i < investments.length; i++) {
+        if(investments[i].userId == currentUser.userId)
+        if(investments[i].currencyId == currencyId) return true;
     }
     return false;
 }
 
 function quantityOfCurrency(currencyId){
-    for (let i = 0; i < myInvestments.length; i++) if (myInvestments[i].currencyId == currencyId) return myInvestments[i].quantity;
+    for (let i = 0; i < investments.length; i++) if(investments[i].userId == currentUser.userId) if (investments[i].currencyId == currencyId) return investments[i].quantity;
 }
 
 function checkCanSellCurrency(quantity){
-    for (let i = 0; i < myInvestments.length; i++) {
-        if (myInvestments[i].currencyId == selectedCurrency){
-            if(quantity <= myInvestments[i].quantity){
-                myInvestments[i].quantity -= quantity;
-                if(myInvestments[i].quantity == 0) myInvestments.splice(i,1);
-                money += Currencys[selectedCurrency].value * quantity;
+    for (let i = 0; i < investments.length; i++) {
+        if(investments[i].userId == currentUser.userId)
+        if (investments[i].currencyId == selectedCurrency){
+            if(quantity <= investments[i].quantity){
+                investments[i].quantity -= quantity;
+                if(investments[i].quantity == 0) investments.splice(i,1);
+                currentUser.money += Currencys[selectedCurrency].value * quantity;
                 
-                let movement = new Movement(selectedCurrency,-quantity);
-                myMovements.push(movement);
+                let movement = new Movement(currentUser.userId ,selectedCurrency , -quantity);
+                movements.push(movement);
 
                 return true;
             }else{
                 return false;
             }
         } 
+    }
+}
+
+function userHasInvestments(){
+    if (investments.length == 0) return false;
+    for (let i = 0; i < investments.length; i++) {
+        if(investments[i].userId == currentUser.userId) return true;
+    }
+}
+
+function userHasMovements(){
+    if (movements.length == 0) return false;
+    for (let i = 0; i < movements.length; i++) {
+        if(movements[i].userId == currentUser.userId) return true;
     }
 }
 
