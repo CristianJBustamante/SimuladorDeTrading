@@ -1,0 +1,67 @@
+h2, h3, h4, h5, h6, select{
+    font-family: "Audiowide", sans-serif;
+    color: white;
+}
+
+body{
+    font-family: 'Exo', sans-serif;
+    background-color: #111111;
+}
+
+section{
+    background-color: #555555;
+    margin: 2rem;
+    border-radius: 1rem;
+
+    .section-container{
+        padding: 20px;
+    }
+}
+
+#close-sesion-button{
+    text-decoration: none;
+}
+
+.header{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 20px;
+}
+
+.balance .section-container{
+    button{
+        margin-top: 20px;
+        font-family: "Audiowide", sans-serif;
+        font-size: 20px;
+    }
+}
+
+.balance-option{
+    margin-top: 20px;
+
+    .balance-option-part{
+        margin-top: 20px;
+        height: 150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        input{
+            font-family: "Audiowide", sans-serif;
+        }
+    }
+}
+
+.hide{
+    display: none;
+}
+
+/* Hide incremental buttons in numeric input */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
